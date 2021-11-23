@@ -11,7 +11,7 @@ from spg_overlay.drone_abstract import DroneAbstract
 from spg_overlay.rescue_center import RescueCenter
 from maps.walls_01 import add_walls, add_boxes
 
-from simple_playgrounds.agent.controllers import Keyboard
+from simple_playgrounds.agent.controllers import Keyboard, RandomContinuous, External
 from simple_playgrounds.playground import SingleRoom
 from simple_playgrounds.engine import Engine
 
@@ -20,7 +20,7 @@ import cv2
 
 
 class MyDrone(DroneAbstract):
-    def __init__(self, controller=Keyboard(), **kwargs):
+    def __init__(self, controller=External(), **kwargs):
         super().__init__(controller=controller, **kwargs)
 
     def define_message(self):
