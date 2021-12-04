@@ -23,7 +23,7 @@ class MyDrone(DroneAbstract):
         SEARCHING_RESCUE_CENTER = 3
         DROPPING_AT_RESCUE_CENTER = 4
 
-    def __init__(self,
+    def __init__(self,wounded_pos,
                  identifier: Optional[int] = None, **kwargs):
         super().__init__(identifier=identifier,
                          should_display_lidar=False,
@@ -35,6 +35,7 @@ class MyDrone(DroneAbstract):
         self.counterStraight = 0
         self.angleStopTurning = 0
         self.isTurning = False
+        self.wounded_pos = wounded_pos
 
 
     def define_message(self):
@@ -97,6 +98,25 @@ class MyDrone(DroneAbstract):
 
         return command
 
+    def process_lidar_sensor(self):
+
+        "Return True is a wall is in front of the Drone"
+
+        lidar = self.lidar().sensor_values
+        close_wall = [False, False, False] # Gauche, Face, Droite
+
+        if lidar[0] > 80:
+            close_wall[0] = True
+
+        if lidar[90] > 80:
+            close_wall[1] = True
+
+        if lidar[180] > 80:
+
+            close_wall[2] = True
+
+        return close_wall
+
     def process_touch_sensor(self):
         """
         Returns True if the drone hits an obstacle
@@ -108,6 +128,25 @@ class MyDrone(DroneAbstract):
             touched = True
 
         return touched
+
+    def control_deter(self):
+
+        wounded_pos = self.wounded_pos
+
+        command_straight = {self.longitudinal_force: 1.0,
+                            self.rotation_velocity: 0.0}
+
+        command_backward = {self.longitudinal_force: -1.0,
+                            self.rotation_velocity: 0.0}
+
+        command_turn = {self.longitudinal_force: 0.0,
+                        self.rotation_velocity: 1.0}
+
+        touched = self.process_touch_sensor()
+
+        close_wall = self.process_lidar_sensor()
+
+        self.counterStraight += 1
 
     def control_random(self):
         """
@@ -147,15 +186,17 @@ class MyDrone(DroneAbstract):
         rotation_velocity_max = 0.6
 
         detection_semantic = the_semantic_sensor.sensor_values
-        print(detection_semantic[0].distance)
+        #print(detection_semantic[0].distance)
         best_angle = 1000
 
         found_wounded = False
+
         if (self.state is self.Activity.SEARCHING_WOUNDED
             or self.state is self.Activity.GRASPING_WOUNDED) \
                 and detection_semantic:
             scores = []
             for detection in detection_semantic:
+
                 # If the wounded person detected is held by nobody
                 if detection.entity \
                         and isinstance(detection.entity, WoundedPerson) \

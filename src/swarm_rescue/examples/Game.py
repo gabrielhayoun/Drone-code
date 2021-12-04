@@ -18,12 +18,6 @@ class Game:
     def __init__(self):
         self.my_map = MyMap()
         self.engine = Engine(playground=self.my_map.playground, screen=True)
-        self.reset()
-
-    def reset(self):
-        self.my_map = MyMap()
-        self.engine = Engine(playground=self.my_map.playground, screen=True)
-        self.iteration = 0;
 
 
 if __name__ == '__main__':
@@ -39,7 +33,7 @@ if __name__ == '__main__':
 
         terminate = game.engine.step(actions)
 
-        time.sleep(0.002)
+        time.sleep(0.005)
 
         if terminate:
             game.engine.terminate()

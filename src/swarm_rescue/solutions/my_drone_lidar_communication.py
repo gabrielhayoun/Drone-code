@@ -1,10 +1,12 @@
 import random
 import math
+import os
+import sys
 from copy import deepcopy
 from typing import Optional
 
 import numpy as np
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from spg_overlay.drone_abstract import DroneAbstract
 from spg_overlay.utils import normalize_angle, sign
 
