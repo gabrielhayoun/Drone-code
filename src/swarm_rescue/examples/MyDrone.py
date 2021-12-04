@@ -105,13 +105,13 @@ class MyDrone(DroneAbstract):
         lidar = self.lidar().sensor_values
         close_wall = [False, False, False] # Gauche, Face, Droite
 
-        if lidar[0] > 80:
+        if lidar[0] < 80:
             close_wall[0] = True
 
-        if lidar[90] > 80:
+        if lidar[90] < 80:
             close_wall[1] = True
 
-        if lidar[180] > 80:
+        if lidar[179] < 80:
 
             close_wall[2] = True
 
@@ -131,7 +131,13 @@ class MyDrone(DroneAbstract):
 
     def control_deter(self):
 
+        #path = Astar(self.map)
+        epsilon = 0.1
+
+        rotation_velocity_max = 0.1
+
         wounded_pos = self.wounded_pos
+
         command_straight = {self.longitudinal_force: 1.0,
                             self.rotation_velocity: 0.0}
 
@@ -153,10 +159,52 @@ class MyDrone(DroneAbstract):
         distance_x = wounded_to_find[0] - position[0]
         distance_y = wounded_to_find[1] - position[1]
 
-        "Vertical optimization"
-        if distance_y < 0:
-            while attitude != 3 * math.PI / 4:
-                command_turn
+
+
+        if not close_wall[1]:
+
+            "Vertical optimization"
+            if distance_y < 0:
+
+                if attitude > 3*math.pi/2 + epsilon or attitude < 3*math.pi/2 - epsilon:
+                    command[self.rotation_velocity] = - rotation_velocity_max
+                else :
+                    command[self.longitudinal_force] = 1
+
+                return command
+
+
+            "Vertical optimization"
+            if distance_y > 0:
+
+                if attitude > math.pi/2 + epsilon or attitude < math.pi/2 - epsilon:
+                    command[self.rotation_velocity] = rotation_velocity_max
+
+                else :
+                    command[self.longitudinal_force] = 1
+
+                return command
+        else:
+
+            "Horizontal optimization"
+            if distance_x < 0:
+
+                command[self.lateral_force] = - 1
+                command[self.longitudinal_force] = 0
+
+                return command
+
+            "Horizontal optimization"
+            if distance_x > 0:
+
+                command[self.lateral_force] = 1
+                command[self.longitudinal_force] = 0
+
+                return command
+
+    def get_map(self,map):
+
+        self.map = map
 
     def control_random(self):
         """
@@ -165,7 +213,7 @@ class MyDrone(DroneAbstract):
 
         position = self.measured_position()
         attitude = self.measured_angle()
-        print([position,attitude])
+
         command_straight = {self.longitudinal_force: 1.0,
                             self.rotation_velocity: 0.0}
 

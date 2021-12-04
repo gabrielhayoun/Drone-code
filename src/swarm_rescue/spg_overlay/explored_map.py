@@ -98,6 +98,7 @@ class ExploredMap:
 
         cv2.imshow("explored map", self._map_exploration)
         cv2.imshow("exploration_zone", self._exploration_zone)
+        cv2.imshow("Map", self._map_playground)
         cv2.waitKey(1)
 
     def _process_positions(self):

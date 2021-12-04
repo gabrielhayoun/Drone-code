@@ -52,6 +52,8 @@ class MyMap(MapAbstract):
 
             self.explored_map.initialize_walls(self.playground)
 
+
+
             wounded_persons_pos = [(40, 40), (90, 40), (330, 40),
                                    (35, 300), (495, 50), (245, 275),
                                    (385, 520), (460, 530), (1080, 50)]
@@ -68,4 +70,6 @@ class MyMap(MapAbstract):
 
             # DRONE
             self.my_drone = MyDrone(wounded_persons_pos)
-            self.playground.add_agent(self.my_drone, ((300, 660), 0))
+            self.playground.add_agent(self.my_drone, ((300,660), 0))
+
+
