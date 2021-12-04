@@ -30,13 +30,44 @@ class Astar():
 
                 if map[y, x] == 0:
 
-                    if map[y, x - 5] == 0 and map[y, x - 4] == 0 and map[y, x - 3] == 0 and map[y, x - 2] == 0 and map[y, x - 1] == 0 and map[y - 5, x] == 0 and map[y - 4, x] == 0 and map[y - 3, x] == 0 and map[y - 2, x] == 0 and map[y - 1, x] == 0 and map[y + 5, x] == 0 and map[y + 4, x] == 0 and map[y + 3, x] == 0 and map[y + 2, x] == 0 and map[y + 1, x] == 0 and map:
+                    cw = 0
+                    for i in range(1, 6):
+                        if map[y, x - i] == 0 and map[y - i, x] == 0 and map[y + i, x] == 0:
+                            cw += 1
+                    for i in range(1, 6):
+                        if map[y + i, x - 5] == 0 and map[y - i, x - 5] == 0:
+                            cw += 1
+                    if cw == 10:
                         dict[(x, y)]['W'] = 1
-                    if map[y - 5, x] == 0 and map[y - 4, x] == 0 and map[y - 3, x] == 0 and map[y - 2, x] == 0 and map[y - 1, x] == 0 and map[y, x - 5] == 0 and map[y, x - 4] == 0 and map[y, x - 3] == 0 and map[y, x - 2] == 0 and map[y, x - 1] == 0 and map[y, x + 5] == 0 and map[y, x + 4] == 0 and map[y, x + 3] == 0 and map[y, x + 2] == 0 and map[y, x + 1] == 0:
+
+                    cn = 0
+                    for i in range(1, 6):
+                        if map[y, x - i] == 0 and map[y - i, x] == 0 and map[y, x + i] == 0:
+                            cn += 1
+                    for i in range(1, 6):
+                        if map[y - 5, x - i] == 0 and map[y - 5, x + i] == 0:
+                            cn += 1
+                    if cn == 10:
                         dict[(x, y)]['N'] = 1
-                    if map[y + 5, x] == 0 and map[y + 4, x] == 0 and map[y + 3, x] == 0 and map[y + 2, x] == 0 and map[y + 1, x] == 0 and map[y, x - 5] == 0 and map[y, x - 4] == 0 and map[y, x - 3] == 0 and map[y, x - 2] == 0 and map[y, x - 1] == 0 and map[y, x + 5] == 0 and map[y, x + 4] == 0 and map[y, x + 3] == 0 and map[y, x + 2] == 0 and map[y, x + 1] == 0:
+
+                    cs = 0
+                    for i in range(1, 6):
+                        if map[y, x - i] == 0 and map[y, x + i] == 0 and map[y + i, x] == 0:
+                            cs += 1
+                    for i in range(1, 6):
+                        if map[y + 5, x - i] == 0 and map[y + 5, x + i] == 0:
+                            cs += 1
+                    if cs == 10:
                         dict[(x, y)]['S'] = 1
-                    if map[y, x + 5] == 0 and map[y, x + 4] == 0 and map[y, x + 3] == 0 and map[y, x + 2] == 0 and map[y, x + 1] == 0 and map[y - 5, x] == 0 and map[y - 4, x] == 0 and map[y - 3, x] == 0 and map[y - 2, x] == 0 and map[y - 1, x] == 0 and map[y + 5, x] == 0 and map[y + 4, x] == 0 and map[y + 3, x] == 0 and map[y + 2, x] == 0 and map[y + 1, x] == 0:
+
+                    ce = 0
+                    for i in range(1, 6):
+                        if map[y, x + i] == 0 and map[y - i, x] == 0 and map[y + i, x] == 0:
+                            ce += 1
+                    for i in range(1, 6):
+                        if map[y + i, x + 5] == 0 and map[y - i, x + 5] == 0:
+                            ce += 1
+                    if ce == 10:
                         dict[(x, y)]['E'] = 1
 
         return dict
@@ -89,7 +120,7 @@ class Astar():
                     temp_g_score = g_score[currCell]+1
                     temp_f_score = temp_g_score+self.h(childCell,goal)
 
-                    if temp_f_score < f_score[childCell] :
+                    if temp_f_score < f_score[childCell]:
 
                         g_score[childCell] = temp_g_score
                         f_score[childCell] = temp_f_score
@@ -101,7 +132,7 @@ class Astar():
 
         while cell!= start :
 
-            fwdPath[aPath[cell]]=cell
+            fwdPath[aPath[cell]] = cell
             cell = aPath[cell]
 
         return fwdPath
