@@ -147,10 +147,25 @@ class MyDrone(DroneAbstract):
 
         self.counterStraight += 1
 
+        position = self.measured_position()
+        attitude = self.measured_angle()
+        wounded_to_find = wounded_pos[0]
+        distance_x = wounded_to_find[0] - position[0]
+        distance_y = wounded_to_find[1] - position[1]
+
+        "Vertical optimization"
+        if distance_y < 0:
+            while attitude != 3 * math.PI / 4:
+                command_turn
+
     def control_random(self):
         """
         The Drone will move forward and turn for a random angle when an obstacle is hit
         """
+
+        position = self.measured_position()
+        attitude = self.measured_angle()
+        print([position,attitude])
         command_straight = {self.longitudinal_force: 1.0,
                             self.rotation_velocity: 0.0}
 
