@@ -13,29 +13,26 @@ from simple_playgrounds.engine import Engine
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-class Game:
-
-    def __init__(self):
-        self.my_map = MyMap()
-        self.engine = Engine(playground=self.my_map.playground, screen=True)
-
-
 if __name__ == '__main__':
 
-    game = Game()
+    game = MyMap()
+    game.build_map()
 
-    while game.engine.game_on:
+    engine = Engine(playground=game.playground, screen=True)
 
-        game.engine.update_screen()
-        game.engine.update_observations()
 
-        actions = {game.my_map.my_drone: game.my_map.my_drone.control()}
+    while engine.game_on:
 
-        terminate = game.engine.step(actions)
+        engine.update_screen()
+        engine.update_observations()
 
-        time.sleep(0.005)
+        actions = {game.my_drone: game.my_drone.control()}
+
+        terminate = engine.step(actions)
+
+        time.sleep(0.5)
 
         if terminate:
-            game.engine.terminate()
+            engine.terminate()
 
-    game.engine.terminate()
+    engine.terminate()

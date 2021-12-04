@@ -23,7 +23,7 @@ class MyDrone(DroneAbstract):
         SEARCHING_RESCUE_CENTER = 3
         DROPPING_AT_RESCUE_CENTER = 4
 
-    def __init__(self,wounded_pos,
+    def __init__(self,wounded_persons_pos,
                  identifier: Optional[int] = None, **kwargs):
         super().__init__(identifier=identifier,
                          should_display_lidar=False,
@@ -35,7 +35,7 @@ class MyDrone(DroneAbstract):
         self.counterStraight = 0
         self.angleStopTurning = 0
         self.isTurning = False
-        self.wounded_pos = wounded_pos
+        self.wounded_pos = wounded_persons_pos
 
 
     def define_message(self):
@@ -132,7 +132,6 @@ class MyDrone(DroneAbstract):
     def control_deter(self):
 
         wounded_pos = self.wounded_pos
-
         command_straight = {self.longitudinal_force: 1.0,
                             self.rotation_velocity: 0.0}
 
