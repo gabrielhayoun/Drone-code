@@ -265,6 +265,17 @@ class MyDrone(DroneAbstract):
 
         self.map = map
 
+        position = [self.measured_position(self)]
+        attitude = self.measured_angle(self)
+        wounded_to_find = wounded_pos[0]
+        distance_x = wounded_to_find[0] - position[0]
+        distance_y = wounded_to_find[1] - position[1]
+
+        "Vertical optimization"
+        if distance_y<0:
+            while attitude != 3*math.PI/4:
+                command_turn
+
     def control_random(self):
         """
         The Drone will move forward and turn for a random angle when an obstacle is hit
