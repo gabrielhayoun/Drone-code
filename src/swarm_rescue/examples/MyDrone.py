@@ -1,36 +1,19 @@
-"""
-This program can be launched directly.
-Example of how to use semantic cones, grasping and dropping
-"""
-
+# This line add, to sys.path, the path to parent path of this file
+import os
 import random
-import time
 import math
 from typing import Optional
-
-import numpy as np
 from enum import Enum
-
-from simple_playgrounds.common.position_utils import CoordinateSampler
-from simple_playgrounds.engine import Engine
-from simple_playgrounds.playground import SingleRoom
-
-import os
 import sys
 
-# This line add, to sys.path, the path to parent path of this file
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from spg_overlay.map_abstract import MapAbstract
-from spg_overlay.rescue_center import RescueCenter
-from spg_overlay.wounded_person import WoundedPerson
 
 from spg_overlay.drone_abstract import DroneAbstract
 from spg_overlay.utils import sign, normalize_angle
-
+from spg_overlay.rescue_center import RescueCenter
+from spg_overlay.wounded_person import WoundedPerson
 
 class MyDrone(DroneAbstract):
-
     class Activity(Enum):
         """
         All the states of the drone as a state machine
@@ -47,12 +30,12 @@ class MyDrone(DroneAbstract):
                          **kwargs)
         # The state is initialize to searching wounded person
         self.state = self.Activity.SEARCHING_WOUNDED
-        self.reward = 0;
 
         # Those values are used by the random control function
         self.counterStraight = 0
         self.angleStopTurning = 0
         self.isTurning = False
+
 
     def define_message(self):
         """
@@ -61,6 +44,7 @@ class MyDrone(DroneAbstract):
         pass
 
     def control(self):
+
         command = {self.longitudinal_force: 0.0,
                    self.lateral_force: 0.0,
                    self.rotation_velocity: 0.0,
@@ -202,48 +186,3 @@ class MyDrone(DroneAbstract):
             command[self.rotation_velocity] = a * rotation_velocity_max
 
         return found_wounded, found_rescue_center, command
-
-
-class MyMap:
-    def __init__(self):
-
-        # BUILD MAP
-        self.size_area = (200, 200)
-        self.playground = SingleRoom(size=self.size_area, wall_type='light')
-
-        # RESCUE CENTER
-        rescue_center = RescueCenter(size=[30, 30])
-        self.playground.add_element(rescue_center, ((20, 20), 0))
-
-        # WOUNDED PERSONS
-        self.number_wounded_persons = 5
-        center_area = (self.size_area[0] * 3 / 4, self.size_area[1] * 3 / 4)
-        area_all = CoordinateSampler(center=center_area, area_shape='rectangle',
-                                     size=(self.size_area[0] / 2, self.size_area[1] / 2))
-        for i in range(self.number_wounded_persons):
-            wounded_person = WoundedPerson(graspable=True, rescue_center=rescue_center)
-            try:
-                self.playground.add_element(wounded_person, area_all, allow_overlapping=False)
-                self.wounded_persons.append(wounded_person)
-            except:
-                print("Failed to place object 'wounded_person'")
-
-        # DRONE
-        self.my_drone = MyDrone()
-        self.playground.add_agent(self.my_drone, ((40, 40), 0))
-
-
-my_map = MyMap()
-engine = Engine(playground=my_map.playground, time_limit=10000, screen=True)
-
-while engine.game_on:
-    engine.update_screen()
-    engine.update_observations()
-    actions = {my_map.my_drone: my_map.my_drone.control()}
-    terminate = engine.step(actions)
-    time.sleep(0.002)
-
-    if terminate:
-        engine.terminate()
-
-engine.terminate()

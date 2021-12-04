@@ -63,6 +63,7 @@ class MyDroneLidarCommunication(DroneAbstract):
         rotation_velocity = 0.6
 
         values = the_lidar_sensor.get_sensor_values()
+        print(values)
         ray_angles = the_lidar_sensor.ray_angles
         size = the_lidar_sensor.size
 

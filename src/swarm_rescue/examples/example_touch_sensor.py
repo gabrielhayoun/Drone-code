@@ -30,7 +30,9 @@ class MyDrone(DroneAbstract):
 
 
 def my_control(drone):
+
     the_touch_sensor = drone.touch()
+    print(len(the_touch_sensor.sensor_values))
     max_value = max(the_touch_sensor.sensor_values)
     # indices will contain indices with max values of the sensor
     indices = [i for i, x in enumerate(the_touch_sensor.sensor_values) if x == max(the_touch_sensor.sensor_values)]
