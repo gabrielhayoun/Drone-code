@@ -15,6 +15,8 @@ import sys
 
 # This line add, to sys.path, the path to parent path of this file
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from spg_overlay.misc_data import MiscData
 from spg_overlay.drone_abstract import DroneAbstract
 
 
@@ -36,8 +38,11 @@ def my_control(drone):
     indices = [i for i, x in enumerate(the_touch_sensor.sensor_values) if x == max(the_touch_sensor.sensor_values)]
 
     in_front = False
+    size = len(the_touch_sensor.sensor_values)
+    quarter = round(size / 4)
+    middle = round(size / 2)
     for ind in indices:
-        if 9 <= ind < 27:
+        if middle - quarter <= ind < middle + quarter:
             in_front = True
             break
 
@@ -60,17 +65,17 @@ def my_control(drone):
 size_area = (700, 700)
 my_playground = LineRooms(size=size_area, number_rooms=2, random_doorstep_position=True, doorstep_size=200)
 
-my_drone = MyDrone(controller=External())
+misc_data = MiscData(size_area=size_area, number_drones=1)
+my_drone = MyDrone(controller=External(), misc_data=misc_data)
 
 my_playground.add_agent(my_drone, ((80, 100), 0))
 
 engine = Engine(playground=my_playground, time_limit=10000, screen=True)
-engine.update_observations()
 
 while engine.game_on:
 
     engine.update_screen()
-    engine.update_observations()
+    engine.update_observations(grasped_invisible=True)
 
     actions = {}
     for my_drone in engine.agents:
