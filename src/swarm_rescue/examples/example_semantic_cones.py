@@ -163,7 +163,8 @@ class MyDrone(DroneAbstract):
         rotation_velocity_max = 0.6
 
         detection_semantic = the_semantic_sensor.sensor_values
-        print(detection_semantic[0].distance)
+        print(detection_semantic)
+        print('######################################')
         best_angle = 1000
 
         found_wounded = False

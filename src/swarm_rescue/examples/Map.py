@@ -31,10 +31,19 @@ class MyMap(MapAbstract):
             self.size_area = (1112, 750)
             self.playground = None
             self.wounded_persons = list()
+            self.drones = []
             self.build_map()
 
         def set_drones(self):
             pass
+
+        def set_drones(self, drones):
+            self.drones = drones
+
+            # POSITIONS OF THE DRONES
+            for i in range(0, self.number_drones):
+                self.playground.add_agent(self.drones[i],
+                                          ((300,660), 0))
 
 
         def build_map(self):
@@ -54,9 +63,7 @@ class MyMap(MapAbstract):
 
 
 
-            wounded_persons_pos = [(40, 40), (90, 40), (330, 40),
-                                   (35, 300), (495, 50), (245, 275),
-                                   (385, 520), (460, 530), (1080, 50)]
+            wounded_persons_pos = [(40, 40)]
             self.number_wounded_persons = len(wounded_persons_pos)
 
             for i in range(self.number_wounded_persons):
@@ -68,8 +75,5 @@ class MyMap(MapAbstract):
                 except:
                     print('Failed to place object')
 
-            # DRONE
-            self.my_drone = MyDrone(wounded_persons_pos)
-            self.playground.add_agent(self.my_drone, ((300,660), 0))
 
 

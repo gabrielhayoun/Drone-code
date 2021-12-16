@@ -1,6 +1,7 @@
 # This line add, to sys.path, the path to parent path of this file
 import os
 import random
+import numpy as np
 import math
 from typing import Optional
 from enum import Enum
@@ -13,6 +14,9 @@ from spg_overlay.utils import sign, normalize_angle
 from spg_overlay.rescue_center import RescueCenter
 from spg_overlay.wounded_person import WoundedPerson
 
+MAX_VEL_REEL = 0.286239
+
+
 class MyDrone(DroneAbstract):
     class Activity(Enum):
         """
@@ -23,7 +27,7 @@ class MyDrone(DroneAbstract):
         SEARCHING_RESCUE_CENTER = 3
         DROPPING_AT_RESCUE_CENTER = 4
 
-    def __init__(self,wounded_persons_pos,
+    def __init__(self, wounded_persons_pos,
                  identifier: Optional[int] = None, **kwargs):
         super().__init__(identifier=identifier,
                          should_display_lidar=False,
@@ -35,8 +39,10 @@ class MyDrone(DroneAbstract):
         self.counterStraight = 0
         self.angleStopTurning = 0
         self.isTurning = False
+        self.path_followed = None
+        self.path = None
         self.wounded_pos = wounded_persons_pos
-
+        self.lock = False
 
     def define_message(self):
         """
@@ -81,7 +87,7 @@ class MyDrone(DroneAbstract):
         # Searching randomly, but when a rescue center or wounded person is detected, we use a special command
         ##########
         if self.state is self.Activity.SEARCHING_WOUNDED:
-            command = self.control_random()
+            command = self.control_deter()
             command[self.grasp] = 0
 
         elif self.state is self.Activity.GRASPING_WOUNDED:
@@ -103,7 +109,7 @@ class MyDrone(DroneAbstract):
         "Return True is a wall is in front of the Drone"
 
         lidar = self.lidar().sensor_values
-        close_wall = [False, False, False] # Gauche, Face, Droite
+        close_wall = [False, False, False]  # Gauche, Face, Droite
 
         if lidar[0] < 80:
             close_wall[0] = True
@@ -112,7 +118,6 @@ class MyDrone(DroneAbstract):
             close_wall[1] = True
 
         if lidar[179] < 80:
-
             close_wall[2] = True
 
         return close_wall
@@ -129,80 +134,134 @@ class MyDrone(DroneAbstract):
 
         return touched
 
+    def discret_path(self, path):
+
+        new_path = []
+
+        for i in range(2, len(path)):
+
+            if path[i][0] != path[i - 1][0] and path[i - 1][1] != path[i - 2][1]:
+
+                new_path.append(path[i - 1])
+
+            elif path[i][1] != path[i - 1][1] and path[i - 1][0] != path[i - 2][0]:
+
+                new_path.append(path[i - 1])
+
+        return new_path
+
+    def discret_path_n(self, path,n):
+
+        new_path = []
+
+        for i in range (0,len(path),n) :
+
+            new_path.append(path[i])
+
+        return new_path
+
     def control_deter(self):
 
-        #path = Astar(self.map)
+        # path = Astar(self.map)
         epsilon = 0.1
+
+        command = {self.longitudinal_force: 0.0,
+                   self.rotation_velocity: 0.0,
+                   }
+        command_null = {self.longitudinal_force: 0.0,
+                   self.rotation_velocity: 0.0}
 
         rotation_velocity_max = 0.1
 
         wounded_pos = self.wounded_pos
 
-        command_straight = {self.longitudinal_force: 1.0,
-                            self.rotation_velocity: 0.0}
-
-        command_backward = {self.longitudinal_force: -1.0,
-                            self.rotation_velocity: 0.0}
-
-        command_turn = {self.longitudinal_force: 0.0,
-                        self.rotation_velocity: 1.0}
-
-        touched = self.process_touch_sensor()
-
-        close_wall = self.process_lidar_sensor()
-
         self.counterStraight += 1
 
         position = self.measured_position()
-        attitude = self.measured_angle()
-        wounded_to_find = wounded_pos[0]
-        distance_x = wounded_to_find[0] - position[0]
-        distance_y = wounded_to_find[1] - position[1]
+        path = self.path
+
+        ind_obj = np.argmax(self.path_followed)
+        obj = path[ind_obj]
 
 
+        position = self.measured_position()
+        theta = self.measured_angle()
 
-        if not close_wall[1]:
+        P = 20
 
-            "Vertical optimization"
-            if distance_y < 0:
-
-                if attitude > 3*math.pi/2 + epsilon or attitude < 3*math.pi/2 - epsilon:
-                    command[self.rotation_velocity] = - rotation_velocity_max
-                else :
-                    command[self.longitudinal_force] = 1
-
-                return command
+        arg1 = position[1] - obj[1]
+        arg2 = position[0] - obj[0]
 
 
-            "Vertical optimization"
-            if distance_y > 0:
+        alpha = math.atan2(arg1, arg2) + math.pi
+        if alpha == 2*math.pi : alpha = 0
 
-                if attitude > math.pi/2 + epsilon or attitude < math.pi/2 - epsilon:
-                    command[self.rotation_velocity] = rotation_velocity_max
+        ### On change le système de coordonnée de la position angulaire pour aller de [0,2pi] vers [0,pi] , [-pi,0]
 
-                else :
-                    command[self.longitudinal_force] = 1
+        #if theta >= 0 and theta < math.pi:
 
-                return command
+            #theta = theta
+
+        #else:
+
+            #theta = theta - 2 * math.pi
+
+        print('############### AVANT MANOEUVRE ###############')
+        print('x_0 = ' + str(position[0]) + ', y_0 = ' + str(position[1]))
+        print('x_1 = ' + str(obj[0]) + ', y_1 =' + str(obj[1]))
+        print('theta= ' + str(theta))
+        print('alpha = ' + str(alpha))
+        print(self.path_followed)
+        print('###############################################')
+
+
+        if  theta - alpha < math.pi  and abs(theta - alpha) > 0.3:
+            command[self.rotation_velocity] =     - min(abs(theta-alpha), MAX_VEL_REEL)
+
+
+        elif theta - alpha > math.pi  and abs(theta - alpha) > 0.3:
+
+            command[self.rotation_velocity] =   min(abs(theta-alpha), MAX_VEL_REEL)
+
+
+        else :
+
+            command[self.longitudinal_force] = max(0.1,min((((position[0] - obj[0]) ** 2 + (position[1] - obj[1]) ** 2) ** 0.5)/100,0.4))
+            #command[self.longitudinal_force] = 0.4
+
+
+            if ((position[0] - obj[0]) ** 2 + (position[1] - obj[1]) ** 2) ** 0.5 < P:
+                self.path_followed[ind_obj] = 0
+                self.path_followed[ind_obj - 1] = - 1
+
+        return command
+
+        '''
+
+        if arg1/arg2 < 0 :
+
+            alpha = alpha + math.pi
+
+        if alpha < 0 :
+
+            alpha = alpha +2*math.pi
+
+        if abs(attitude - alpha) > epsilon:
+            command[self.rotation_velocity] = rotation_velocity_max
+
         else:
+            command[self.longitudinal_force] = 1
 
-            "Horizontal optimization"
-            if distance_x < 0:
+        position = self.measured_position()
 
-                command[self.lateral_force] = - 1
-                command[self.longitudinal_force] = 0
+        if ((position[0] - obj[0]) ** 2 + (position[1] - obj[1]) ** 2) ** 0.5 < P:
+            self.path_followed[ind_obj] = 0
+            self.path_followed[ind_obj - 1] = -1
+            
+            '''
 
-                return command
 
-            "Horizontal optimization"
-            if distance_x > 0:
-
-                command[self.lateral_force] = 1
-                command[self.longitudinal_force] = 0
-
-                return command
-
-    def get_map(self,map):
+    def get_map(self, map):
 
         self.map = map
 
@@ -248,7 +307,7 @@ class MyDrone(DroneAbstract):
         rotation_velocity_max = 0.6
 
         detection_semantic = the_semantic_sensor.sensor_values
-        #print(detection_semantic[0].distance)
+        # print(detection_semantic[0].distance)
         best_angle = 1000
 
         found_wounded = False
