@@ -1,6 +1,5 @@
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 
 from spg_overlay.wounded_person import WoundedPerson
 from simple_playgrounds.element.elements.basic import Wall
