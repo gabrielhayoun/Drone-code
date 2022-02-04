@@ -37,13 +37,10 @@ class MyMap(MapAbstract):
         def set_drones(self):
             pass
 
-        def set_drones(self, drones):
-            self.drones = drones
-
-            # POSITIONS OF THE DRONES
-            for i in range(0, self.number_drones):
-                self.playground.add_agent(self.drones[i],
-                                          ((300,660), 0))
+        def set_drone(self, pos):
+            drone = MyDrone()
+            self.playground.add_agent(drone, (pos, 0))
+            self.mydrone = drone
 
 
         def build_map(self):
@@ -63,7 +60,9 @@ class MyMap(MapAbstract):
 
 
 
-            wounded_persons_pos = [(40, 40)]
+            wounded_persons_pos = [(40, 40), (90, 40), (330, 40),
+                                (35, 300), (495, 50), (245, 275),
+                                (385, 520), (460, 530), (1080, 50)]
             self.number_wounded_persons = len(wounded_persons_pos)
 
             for i in range(self.number_wounded_persons):

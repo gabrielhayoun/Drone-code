@@ -160,6 +160,19 @@ class MyDrone(DroneAbstract):
 
         return new_path
 
+
+    def controleRL(self):
+
+
+
+
+
+
+
+
+
+
+
     def control_deter(self):
 
         # path = Astar(self.map)
@@ -236,29 +249,6 @@ class MyDrone(DroneAbstract):
 
         return command
 
-        '''
-
-        if arg1/arg2 < 0 :
-
-            alpha = alpha + math.pi
-
-        if alpha < 0 :
-
-            alpha = alpha +2*math.pi
-
-        if abs(attitude - alpha) > epsilon:
-            command[self.rotation_velocity] = rotation_velocity_max
-
-        else:
-            command[self.longitudinal_force] = 1
-
-        position = self.measured_position()
-
-        if ((position[0] - obj[0]) ** 2 + (position[1] - obj[1]) ** 2) ** 0.5 < P:
-            self.path_followed[ind_obj] = 0
-            self.path_followed[ind_obj - 1] = -1
-            
-            '''
 
 
     def get_map(self, map):
